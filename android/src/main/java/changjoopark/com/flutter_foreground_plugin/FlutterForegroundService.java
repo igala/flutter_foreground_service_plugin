@@ -116,6 +116,7 @@ public class FlutterForegroundService extends Service {
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         android.util.Log.d("FlutterForegroundService", "onTaskRemoved");
-
+        stopForeground(true);
+        stopSelf();
     }
     }
