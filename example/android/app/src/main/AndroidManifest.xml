@@ -10,7 +10,7 @@
          additional functionality it is fine to subclass or reimplement
          FlutterApplication and put your custom class here. -->
     <application
-        android:name="io.flutter.app.FlutterApplication"
+
         android:label="Flutter ForegroundService Example"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -34,6 +34,9 @@
         </activity>
 
         <service android:name="changjoopark.com.flutter_foreground_plugin.FlutterForegroundService"/>
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
     </application>
     <uses-sdk
         android:minSdkVersion="23"
