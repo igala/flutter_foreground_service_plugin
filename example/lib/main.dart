@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
 void startForegroundService() async {
   await FlutterForegroundPlugin.setServiceMethodInterval(seconds: 5);
   await FlutterForegroundPlugin.setServiceMethod(globalForegroundService);
-  await FlutterForegroundPlugin.startForegroundService(
+  await FlutterForegroundPlugin. startForegroundService(
     holdWakeLock: false,
     onStarted: () {
       print("Foreground on Started");

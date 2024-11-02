@@ -1,5 +1,7 @@
 package changjoopark.com.flutter_foreground_plugin;
 
+import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -11,6 +13,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 
@@ -35,31 +38,38 @@ public class FlutterForegroundService extends Service {
         final String action = intent.getAction();
         Log.d(TAG, String.format("onStartCommand: %s", action));
 
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            if (getApplicationContext().checkSelfPermission( Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions( new String[]{Manifest.permission.POST_NOTIFICATIONS}, 2);
+//            }
+//        }
         switch (action) {
             case FlutterForegroundPlugin.START_FOREGROUND_ACTION:
                 PackageManager pm = getApplicationContext().getPackageManager();
                 Intent notificationIntent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
                 PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-                        notificationIntent, 0);
+                        notificationIntent, PendingIntent.FLAG_MUTABLE);
 
                 Bundle bundle = intent.getExtras();
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
                             "flutter_foreground_service_channel",
-                            NotificationManager.IMPORTANCE_DEFAULT);
+                            NotificationManager.IMPORTANCE_HIGH);
 
-                    ((NotificationManager) getSystemService(NOTIFICATION_SERVICE))
-                            .createNotificationChannel(channel);
+                    NotificationManager manager = getSystemService(NotificationManager.class);
+                    if (manager != null) {
+                        manager.createNotificationChannel(channel);
+                    }
                 }
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                         .setSmallIcon(getNotificationIcon(bundle.getString("icon")))
-                        .setColor(bundle.getInt("color"))
+                       // .setColor(bundle.getInt("color"))
                         .setContentTitle(bundle.getString("title"))
                         .setContentText(bundle.getString("content"))
-                        .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                        .setCategory(NotificationCompat.CATEGORY_CALL)
                         .setContentIntent(pendingIntent)
-                        .setUsesChronometer(bundle.getBoolean("chronometer"))
+                    //    .setUsesChronometer(bundle.getBoolean("chronometer"))
                         .setOngoing(true);
 
                 if (bundle.getBoolean("stop_action")) {
@@ -67,7 +77,7 @@ public class FlutterForegroundService extends Service {
                     stopSelf.setAction(ACTION_STOP_SERVICE);
 
                     PendingIntent pStopSelf = PendingIntent
-                            .getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT);
+                            .getService(this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT|PendingIntent.FLAG_MUTABLE);
                     builder.addAction(getNotificationIcon(bundle.getString("stop_icon")),
                             bundle.getString("stop_text"),
                             pStopSelf);
@@ -76,8 +86,11 @@ public class FlutterForegroundService extends Service {
                 if (bundle.getString("subtext") != null && !bundle.getString("subtext").isEmpty()) {
                     builder.setSubText(bundle.getString("subtext"));
                 }
-
-                startForeground(ONGOING_NOTIFICATION_ID, builder.build());
+                Log.d(TAG, "startForeground called");
+                NotificationManager manager = getSystemService(NotificationManager.class);
+                Notification notification = builder.build();
+                manager.notify(ONGOING_NOTIFICATION_ID,notification);
+                startForeground(ONGOING_NOTIFICATION_ID, notification);
                 break;
             case FlutterForegroundPlugin.STOP_FOREGROUND_ACTION:
                 stopFlutterForegroundService();
