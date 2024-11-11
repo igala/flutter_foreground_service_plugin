@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -90,7 +91,13 @@ public class FlutterForegroundService extends Service {
                 NotificationManager manager = getSystemService(NotificationManager.class);
                 Notification notification = builder.build();
                 manager.notify(ONGOING_NOTIFICATION_ID,notification);
-                startForeground(ONGOING_NOTIFICATION_ID, notification);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    Log.d(TAG, "startForeground called with microphone permissions");
+                    startForeground(ONGOING_NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+                } else {
+                    Log.d(TAG, "startForeground called without microphone permissions");
+                    startForeground(ONGOING_NOTIFICATION_ID, notification);
+                }
                 break;
             case FlutterForegroundPlugin.STOP_FOREGROUND_ACTION:
                 stopFlutterForegroundService();

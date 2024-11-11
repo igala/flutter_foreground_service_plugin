@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_plugin/flutter_foreground_plugin.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -56,6 +57,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 void startForegroundService() async {
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.bluetooth, Permission.bluetoothConnect,Permission.microphone,Permission.notification
+  ].request();
   await FlutterForegroundPlugin.setServiceMethodInterval(seconds: 5);
   await FlutterForegroundPlugin.setServiceMethod(globalForegroundService);
   await FlutterForegroundPlugin. startForegroundService(
